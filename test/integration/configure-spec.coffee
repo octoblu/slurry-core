@@ -25,7 +25,7 @@ describe 'configure', ->
     enableDestroy @meshblu
     @apiStrategy = new MockStrategy name: 'api'
     @octobluStrategy = new MockStrategy name: 'octoblu'
-    @configureHandler = onMessage: sinon.stub()
+    @configureHandler = onConfigure: sinon.stub()
 
     @meshblu
       .get '/v2/whoami'
@@ -183,20 +183,7 @@ describe 'configure', ->
 
         describe 'when called with a valid configure', ->
           beforeEach (done) ->
-            @configureHandler.onMessage.yields null, metadata: {code: 200}, data: {whatever: 'this is a response'}
-            @responseHandler = @meshblu
-              .post '/message'
-              .set 'Authorization', "Basic #{@credentialsDeviceAuth}"
-              .set 'x-meshblu-as', 'user-device'
-              .send
-                devices: ['flow-uuid']
-                metadata:
-                  code: 200
-                  to: { foo: 'bar' }
-                data:
-                  whatever: 'this is a response'
-              .reply 201
-
+            @configureHandler.onConfigure.yields null
             options =
               baseUrl: "http://localhost:#{@serverPort}"
               headers:
@@ -205,11 +192,7 @@ describe 'configure', ->
                   {"from": "user-device", "to": "cred-uuid", "type": "configure.received"}
                 ]
               json:
-                metadata:
-                  jobType: 'hello'
-                  respondTo: { foo: 'bar' }
-                data:
-                  greeting: 'hola'
+                options: foo: 'bar'
               auth:
                 username: 'cred-uuid'
                 password: 'cred-token'
@@ -220,37 +203,21 @@ describe 'configure', ->
           it 'should return a 201', ->
             expect(@response.statusCode).to.equal 201, JSON.stringify @body
 
-          it 'should respond to the configure via meshblu', ->
-            @responseHandler.done()
-
           it 'should call the hello configureHandler with the configure and auth', ->
-            expect(@configureHandler.onMessage).to.have.been.calledWith sinon.match {
+            expect(@configureHandler.onConfigure).to.have.been.calledWith sinon.match {
               encrypted:
                 secrets:
                   credentials:
                     secret: 'this is secret'
             }, {
-              metadata:
-                jobType: 'hello'
-              data:
-                greeting: 'hola'
+              auth: {uuid: 'cred-uuid', token: 'cred-token'}
+              userDeviceUuid: 'user-device'
+              config: options: foo: 'bar'
             }
 
         describe 'when called with a valid configure, but theres an error', ->
           beforeEach (done) ->
-            @configureHandler.onMessage.yields new Error 'Something very bad happened'
-            @responseHandler = @meshblu
-              .post '/message'
-              .set 'Authorization', "Basic #{@credentialsDeviceAuth}"
-              .set 'x-meshblu-as', 'user-device'
-              .send
-                devices: ['flow-uuid']
-                metadata:
-                  code: 500
-                  to: 'food'
-                  error:
-                    message: 'Something very bad happened'
-              .reply 201
+            @configureHandler.onConfigure.yields new Error 'Something very bad happened'
 
             options =
               baseUrl: "http://localhost:#{@serverPort}"
@@ -260,11 +227,7 @@ describe 'configure', ->
                   {"from": "user-device", "to": "cred-uuid", "type": "configure.received"}
                 ]
               json:
-                metadata:
-                  jobType: 'hello'
-                  respondTo: 'food'
-                data:
-                  greeting: 'hola'
+                options: foo: 'bar'
               auth:
                 username: 'cred-uuid'
                 password: 'cred-token'
@@ -272,39 +235,24 @@ describe 'configure', ->
             request.post '/v1/configure', options, (error, @response, @body) =>
               done error
 
-          it 'should call the onMessage configureHandler with the configure and auth', ->
-            expect(@configureHandler.onMessage).to.have.been.calledWith sinon.match {
+          it 'should call the onConfigure configureHandler with the configure and auth', ->
+            expect(@configureHandler.onConfigure).to.have.been.calledWith sinon.match {
               encrypted:
                 secrets:
                   credentials:
                     secret: 'this is secret'
             }, {
-              metadata:
-                jobType: 'hello'
-              data:
-                greeting: 'hola'
+              auth: {uuid: 'cred-uuid', token: 'cred-token'}
+              userDeviceUuid: 'user-device'
+              config: options: foo: 'bar'
             }
 
           it 'should return a 500', ->
             expect(@response.statusCode).to.equal 500, JSON.stringify @body
 
-          it 'should respond to the configure with the error via meshblu', ->
-            @responseHandler.done()
-
         describe 'when called with a valid configure, but the the slurry is invalid', ->
           beforeEach (done) ->
-            @configureHandler.onMessage.yields new Error 'Something very bad happened'
-            @responseHandler = @meshblu
-              .post '/message'
-              .set 'Authorization', "Basic #{@credentialsDeviceAuth}"
-              .set 'x-meshblu-as', 'user-device'
-              .send
-                devices: ['flow-uuid']
-                metadata:
-                  code: 500
-                  error:
-                    message: 'Something very bad happened'
-              .reply 201
+            @configureHandler.onConfigure.yields new Error 'Something very bad happened'
 
             options =
               baseUrl: "http://localhost:#{@serverPort}"
@@ -326,19 +274,16 @@ describe 'configure', ->
               done error
 
           it 'should call the hello configureHandler with the configure and auth', ->
-            expect(@configureHandler.onMessage).to.have.been.calledWith sinon.match {
-              metadata:
-                jobType: 'hello'
-              data:
-                greeting: 'hola'
+            expect(@configureHandler.onConfigure).to.have.been.calledWith sinon.match {
               encrypted:
                 secrets:
                   credentials:
                     secret: 'this is secret'
+            }, {
+              auth: {uuid: 'cred-uuid', token: 'cred-token'}
+              userDeviceUuid: 'user-device'
+              config: options: foo: 'bar'
             }
 
           it 'should return a 500', ->
             expect(@response.statusCode).to.equal 500, JSON.stringify @body
-
-          it 'should respond to the configure with the error via meshblu', ->
-            @responseHandler.done()

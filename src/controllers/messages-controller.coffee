@@ -11,8 +11,8 @@ class MessagesController
     respondTo = _.get message, 'metadata.respondTo'
 
     debug 'create', auth.uuid
-    @credentialsDeviceService.getslurryByUuid auth.uuid, (error, slurry) =>
-      debug 'credentialsDeviceService.getslurryByUuid', error
+    @credentialsDeviceService.getSlurryByUuid auth.uuid, (error, slurry) =>
+      debug 'credentialsDeviceService.getSlurryByUuid', error
       return @respondWithError {auth, error, res, route, respondTo} if error?
 
       @messagesService.send {auth, slurry, message}, (error, response) =>

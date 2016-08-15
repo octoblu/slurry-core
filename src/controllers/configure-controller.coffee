@@ -5,30 +5,19 @@ class ConfigureController
   constructor: ({@credentialsDeviceService, @configureService}) ->
 
   create: (req, res) =>
-    route     = req.get 'x-meshblu-route'
-    auth      = req.meshbluAuth
-    message   = req.body
-    respondTo = _.get message, 'metadata.respondTo'
+    route  = req.get 'x-meshblu-route'
+    auth   = req.meshbluAuth
+    config = req.body
 
     debug 'create', auth.uuid
-    @credentialsDeviceService.getslurryByUuid auth.uuid, (error, slurry) =>
-      debug 'credentialsDeviceService.getslurryByUuid', error
-      return @respondWithError {auth, error, res, route, respondTo} if error?
+    @credentialsDeviceService.getSlurryByUuid auth.uuid, (error, slurry) =>
+      debug 'credentialsDeviceService.getSlurryByUuid', error
+      return res.sendError error if error?
 
-      @configureService.send {auth, slurry, message}, (error, response) =>
-        debug 'configureService.send', error
-        return @respondWithError {auth, error, res, route, respondTo} if error?
+      @configureService.configure {auth, slurry, config, route}, (error, response) =>
+        debug 'configureService.save', error
+        return res.sendError error if error?
 
-        @configureService.reply {auth, route, response, respondTo}, (error) =>
-          debug 'configureService.reply', error
-          return @respondWithError {auth, error, res, route, respondTo} if error?
-
-          res.sendStatus 201
-
-  respondWithError: ({auth, error, res, route, respondTo}) =>
-    @configureService.replyWithError {auth, error, route, respondTo}, (newError) =>
-      return res.sendError newError if newError?
-      return res.sendError error
-
+        res.sendStatus 201
 
 module.exports = ConfigureController

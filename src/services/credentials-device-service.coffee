@@ -26,7 +26,7 @@ class CredentialsDeviceService
 
       return @_getCredentialsDevice options, callback
 
-  getslurryByUuid: (uuid, callback) =>
+  getSlurryByUuid: (uuid, callback) =>
     @meshblu.device uuid, (error, device) =>
       return callback error if error?
       return callback @_userError 'invalid credentials device', 400 unless @_isSignedCorrectly device
