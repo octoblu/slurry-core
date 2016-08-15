@@ -26,6 +26,7 @@ describe 'User Devices Spec', ->
     serverOptions =
       logFn: ->
       messageHandler: {}
+      configureHandler: {}
       port: undefined,
       disableLogging: true
       apiStrategy: @apiStrategy
@@ -245,6 +246,8 @@ describe 'User Devices Spec', ->
               version: '2.0.0'
               form:
                 $ref: 'http://octoblu.xxx/v1/form-schema'
+              configure:
+                $ref: 'http://octoblu.xxx/v1/configure-schema'
               message:
                 $ref: 'http://octoblu.xxx/v1/message-schema'
               response:

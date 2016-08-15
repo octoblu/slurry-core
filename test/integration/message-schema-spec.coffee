@@ -42,6 +42,7 @@ describe 'message schema', ->
       apiStrategy: @apiStrategy
       octobluStrategy: @octobluStrategy
       messageHandler: @messageHandler
+      configureHandler: {}
       serviceUrl: 'http://octoblu.xxx'
       deviceType: 'slurry-slurryr'
       meshbluConfig:

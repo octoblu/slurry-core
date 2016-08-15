@@ -4,6 +4,7 @@ passport    = require 'passport'
 CredentialsDeviceController = require './controllers/credentials-device-controller'
 FormSchemaController        = require './controllers/form-schema-controller'
 MessagesController          = require './controllers/messages-controller'
+ConfigureController         = require './controllers/configure-controller'
 MessageSchemaController     = require './controllers/message-schema-controller'
 ConfigureSchemaController   = require './controllers/configure-schema-controller'
 OctobluAuthController       = require './controllers/octoblu-auth-controller'
@@ -35,6 +36,7 @@ class Router
     @credentialsDeviceController = new CredentialsDeviceController {@credentialsDeviceService, @appOctobluHost, @serviceUrl, @userDeviceManagerUrl}
     @formSchemaController        = new FormSchemaController {@messagesService}
     @messagesController          = new MessagesController {@credentialsDeviceService, @messagesService}
+    @configureController         = new ConfigureController {@credentialsDeviceService, @configureService}
     @messageSchemaController     = new MessageSchemaController {@messagesService}
     @configureSchemaController   = new ConfigureSchemaController {@configureService}
     @octobluAuthController       = new OctobluAuthController
@@ -63,7 +65,7 @@ class Router
     app.post  '/auth/api/callback', passport.authenticate('api'), @credentialsDeviceController.upsert
 
     app.post '/v1/messages', @messagesController.create
-    # app.post '/v1/configure', @configureController.create
+    app.post '/v1/configure', @configureController.create
 
     app.all  '/credentials/:credentialsDeviceUuid*', @credentialsDeviceController.getCredentialsDevice
     app.get  '/credentials/:credentialsDeviceUuid', @credentialsDeviceController.get

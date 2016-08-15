@@ -216,10 +216,15 @@ describe 'Auth Spec', ->
                       secret:       'resource owner secret'
                       refreshToken: 'resource owner refresh token'
               slurrySignature: 'a1aPDryhnkn7TSpGcRID5ah9FMdkb+uNvp+5w8tRybXvKt3JuWcBDI0JYGAnSPH3EYBqolPbGrsXJJnl19vJjw=='
-
               'meshblu.forwarders.message.received': [{
                 type: 'webhook'
                 url: 'http://the-slurry-url/v1/messages'
+                method: 'POST'
+                generateAndForwardMeshbluCredentials: true
+              }]
+              'meshblu.forwarders.configure.received': [{
+                type: 'webhook'
+                url: 'http://the-slurry-url/v1/configure'
                 method: 'POST'
                 generateAndForwardMeshbluCredentials: true
               }]
@@ -317,6 +322,12 @@ describe 'Auth Spec', ->
               'meshblu.forwarders.message.received': [{
                 type: 'webhook'
                 url: 'http://the-slurry-url/v1/messages'
+                method: 'POST'
+                generateAndForwardMeshbluCredentials: true
+              }]
+              'meshblu.forwarders.configure.received': [{
+                type: 'webhook'
+                url: 'http://the-slurry-url/v1/configure'
                 method: 'POST'
                 generateAndForwardMeshbluCredentials: true
               }]
@@ -423,6 +434,12 @@ describe 'Auth Spec', ->
                 method: 'POST'
                 generateAndForwardMeshbluCredentials: true
               }]
+              'meshblu.forwarders.configure.received': [{
+                type: 'webhook'
+                url: 'http://the-slurry-url/v1/configure'
+                method: 'POST'
+                generateAndForwardMeshbluCredentials: true
+              }]
           .reply 204
 
         @createMessageReceivedSubscription = @meshblu
@@ -521,6 +538,12 @@ describe 'Auth Spec', ->
               'meshblu.forwarders.message.received': [{
                 type: 'webhook'
                 url: 'http://the-slurry-url/v1/messages'
+                method: 'POST'
+                generateAndForwardMeshbluCredentials: true
+              }]
+              'meshblu.forwarders.configure.received': [{
+                type: 'webhook'
+                url: 'http://the-slurry-url/v1/configure'
                 method: 'POST'
                 generateAndForwardMeshbluCredentials: true
               }]

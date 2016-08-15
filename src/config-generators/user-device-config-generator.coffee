@@ -25,7 +25,7 @@ module.exports = (options) ->
       form:
         $ref: formSchemaUrl
       configure:
-        $ref: configSchemaUrl
+        $ref: configureSchemaUrl
       message:
         $ref: messageSchemaUrl
       response:
