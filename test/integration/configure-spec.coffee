@@ -11,7 +11,7 @@ shmock        = require 'shmock'
 MockStrategy  = require '../mock-strategy'
 Server        = require '../../src/server'
 
-xdescribe 'configure', ->
+describe 'configure', ->
   beforeEach (done) ->
     @privateKey = fs.readFileSync "#{__dirname}/../data/private-key.pem", 'utf8'
     @encryption = Encryption.fromPem @privateKey
@@ -185,7 +185,7 @@ xdescribe 'configure', ->
           beforeEach (done) ->
             @configureHandler.onMessage.yields null, metadata: {code: 200}, data: {whatever: 'this is a response'}
             @responseHandler = @meshblu
-              .post '/configure'
+              .post '/message'
               .set 'Authorization', "Basic #{@credentialsDeviceAuth}"
               .set 'x-meshblu-as', 'user-device'
               .send
@@ -240,7 +240,7 @@ xdescribe 'configure', ->
           beforeEach (done) ->
             @configureHandler.onMessage.yields new Error 'Something very bad happened'
             @responseHandler = @meshblu
-              .post '/configure'
+              .post '/message'
               .set 'Authorization', "Basic #{@credentialsDeviceAuth}"
               .set 'x-meshblu-as', 'user-device'
               .send
@@ -249,7 +249,7 @@ xdescribe 'configure', ->
                   code: 500
                   to: 'food'
                   error:
-                    configure: 'Something very bad happened'
+                    message: 'Something very bad happened'
               .reply 201
 
             options =
@@ -295,7 +295,7 @@ xdescribe 'configure', ->
           beforeEach (done) ->
             @configureHandler.onMessage.yields new Error 'Something very bad happened'
             @responseHandler = @meshblu
-              .post '/configure'
+              .post '/message'
               .set 'Authorization', "Basic #{@credentialsDeviceAuth}"
               .set 'x-meshblu-as', 'user-device'
               .send
@@ -303,7 +303,7 @@ xdescribe 'configure', ->
                 metadata:
                   code: 500
                   error:
-                    configure: 'Something very bad happened'
+                    message: 'Something very bad happened'
               .reply 201
 
             options =

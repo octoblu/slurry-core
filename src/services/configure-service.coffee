@@ -13,9 +13,6 @@ class ConfigureService
     throw new Error 'configureHandler is required' unless @configureHandler?
     @validator = new Validator
 
-  formSchema: (callback) =>
-    @configureHandler.formSchema callback
-
   configureSchema: (callback) =>
     @configureHandler.configureSchema callback
 
@@ -33,7 +30,7 @@ class ConfigureService
       data:     response.data
 
     meshblu = new MeshbluHTTP auth
-    meshblu.configure configure, as: userDeviceUuid, callback
+    meshblu.message configure, as: userDeviceUuid, callback
 
   replyWithError: ({auth, error, route, respondTo}, callback) =>
     return callback @_userError(MISSING_ROUTE_HEADER, 422) if _.isEmpty route
@@ -50,10 +47,7 @@ class ConfigureService
           configure: error.configure
 
     meshblu = new MeshbluHTTP auth
-    meshblu.configure configure, as: userDeviceUuid, callback
-
-  responseSchema: (callback) =>
-    @configureHandler.responseSchema callback
+    meshblu.message configure, as: userDeviceUuid, callback
 
   send: ({auth, slurry, configure}, callback) =>
     return callback @_userError(MISSING_METADATA, 422) unless configure?.metadata?
