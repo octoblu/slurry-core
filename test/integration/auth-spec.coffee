@@ -236,6 +236,11 @@ describe 'Auth Spec', ->
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
           .reply 201
 
+        @createConfigureReceivedSubscription = @meshblu
+          .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/configure.received'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 201
+
         options =
           uri: '/auth/api/callback'
           baseUrl: "http://localhost:#{@serverPort}"
@@ -258,6 +263,9 @@ describe 'Auth Spec', ->
 
       it 'should subscribe to its own received messages', ->
         @createMessageReceivedSubscription.done()
+
+      it 'should subscribe to its own configure.received', ->
+        @createConfigureReceivedSubscription.done()
 
       it 'should redirect to the userDeviceManagerUrl with the bearerToken and credentialsDeviceUrl', ->
         EXPECTED = 'http://manage-my.slurry/?meshbluAuthBearer=c29tZS11dWlkOnNvbWUtdG9rZW4%3D&credentialsDeviceUrl=http%3A%2F%2Fthe-slurry-url%2Fcredentials%2Fcred-uuid&appOctobluHost=http%3A%2F%2Fapp.octoblu.biz%2F'
@@ -338,6 +346,11 @@ describe 'Auth Spec', ->
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
           .reply 201
 
+        @createConfigureReceivedSubscription = @meshblu
+          .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/configure.received'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 201
+
         options =
           uri: '/auth/api/callback'
           baseUrl: "http://localhost:#{@serverPort}"
@@ -357,6 +370,9 @@ describe 'Auth Spec', ->
 
       it 'should subscribe to its own received messages', ->
         @createMessageReceivedSubscription.done()
+
+      it 'should subscribe to its own configure.received', ->
+        @createConfigureReceivedSubscription.done()
 
       it 'should return a 301', ->
         expect(@response.statusCode).to.equal 301
@@ -447,6 +463,11 @@ describe 'Auth Spec', ->
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
           .reply 201
 
+        @createConfigureReceivedSubscription = @meshblu
+          .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/configure.received'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 201
+
         options =
           uri: '/auth/api/callback'
           baseUrl: "http://localhost:#{@serverPort}"
@@ -466,6 +487,9 @@ describe 'Auth Spec', ->
 
       it 'should subscribe to its own received messages', ->
         @createMessageReceivedSubscription.done()
+
+      it 'should subscribe to its own configure.received', ->
+        @createConfigureReceivedSubscription.done()
 
       it 'should return a 301', ->
         expect(@response.statusCode).to.equal 301
@@ -554,6 +578,11 @@ describe 'Auth Spec', ->
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
           .reply 201
 
+        @createConfigureReceivedSubscription = @meshblu
+          .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/configure.received'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 201
+
         options =
           uri: '/auth/api/callback'
           baseUrl: "http://localhost:#{@serverPort}"
@@ -576,6 +605,9 @@ describe 'Auth Spec', ->
 
       it 'should subscribe to its own received messages', ->
         @createMessageReceivedSubscription.done()
+
+      it 'should subscribe to its own configure.received', ->
+        @createConfigureReceivedSubscription.done()
 
       it 'should redirect to the userDeviceManagerUrl with the bearerToken and credentialsDeviceUrl', ->
         EXPECTED = 'http://manage-my.slurry/?meshbluAuthBearer=c29tZS11dWlkOnNvbWUtdG9rZW4%3D&credentialsDeviceUrl=http%3A%2F%2Fthe-slurry-url%2Fcredentials%2Fcred-uuid&appOctobluHost=http%3A%2F%2Fapp.octoblu.biz%2F'

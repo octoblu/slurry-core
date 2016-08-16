@@ -25,7 +25,9 @@ describe 'configure', ->
     enableDestroy @meshblu
     @apiStrategy = new MockStrategy name: 'api'
     @octobluStrategy = new MockStrategy name: 'octoblu'
-    @configureHandler = onConfigure: sinon.stub()
+    @configureHandler =
+      onConfigure: sinon.stub()
+      formSchema: sinon.stub()
 
     @meshblu
       .get '/v2/whoami'
@@ -152,6 +154,7 @@ describe 'configure', ->
       describe 'when we have a real credentials device', ->
         beforeEach ->
           serviceAuth = new Buffer('peter:i-could-eat').toString 'base64'
+          secondAuth  = new Buffer('cred-uuid:cred-token').toString 'base64'
 
           @meshblu
             .get '/v2/devices/cred-uuid'
@@ -163,6 +166,13 @@ describe 'configure', ->
                   authorizedKey: 'some-uuid'
                   credentialsDeviceUuid: 'cred-uuid'
                   encrypted: @encrypted
+
+          @meshblu
+            .post '/devices/cred-uuid/tokens'
+            .set 'Authorization', "Basic #{secondAuth}"
+            .reply 201,
+              uuid: 'cred-uuid'
+              token: 'jokin'
 
         describe 'when called with a configure without metadata', ->
           beforeEach (done) ->

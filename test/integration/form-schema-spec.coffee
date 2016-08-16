@@ -26,6 +26,7 @@ describe 'form schema', ->
     @apiStrategy = new MockStrategy name: 'api'
     @octobluStrategy = new MockStrategy name: 'octoblu'
     @messageHandler = formSchema: sinon.stub()
+    @configureHandler = formSchema: sinon.stub()
 
     @meshblu
       .get '/v2/whoami'
@@ -42,7 +43,7 @@ describe 'form schema', ->
       apiStrategy: @apiStrategy
       octobluStrategy: @octobluStrategy
       messageHandler: @messageHandler
-      configureHandler: {}
+      configureHandler: @configureHandler
       serviceUrl: 'http://octoblu.xxx'
       deviceType: 'slurry-slurryr'
       meshbluConfig:
@@ -71,6 +72,7 @@ describe 'form schema', ->
     describe 'when the message-handler yields an empty object', ->
       beforeEach (done) ->
         @messageHandler.formSchema.yields null, {}
+        @configureHandler.formSchema.yields null, {}
 
         options =
           baseUrl: "http://localhost:#{@serverPort}"
@@ -97,6 +99,7 @@ describe 'form schema', ->
               color:
                 type: 'string'
         }
+        @configureHandler.formSchema.yields null, {}
 
         options =
           baseUrl: "http://localhost:#{@serverPort}"

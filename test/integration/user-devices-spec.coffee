@@ -256,13 +256,13 @@ describe 'User Devices Spec', ->
               version: '2.0.0'
               whitelists:
                 broadcast:
-                  as: [{uuid: 'some-uuid'}]
+                  as: [{uuid: 'some-uuid'}, {uuid: 'cred-uuid'}]
                   received: [{uuid: 'some-uuid'}]
                   sent: [{uuid: 'some-uuid'}]
                 configure:
                   as: [{uuid: 'some-uuid'}]
                   received: [{uuid: 'some-uuid'}]
-                  sent: [{uuid: 'some-uuid'}]
+                  sent: [{uuid: 'some-uuid'}, {uuid: 'cred-uuid'}]
                   update: [{uuid: 'some-uuid'}]
                 discover:
                   view: [{uuid: 'some-uuid'}]
@@ -276,6 +276,11 @@ describe 'User Devices Spec', ->
 
         @createMessageReceivedSubscription = @meshblu
           .post '/v2/devices/cred-uuid/subscriptions/user_device_uuid/message.received'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 201
+
+        @createConfigureSentSubscription = @meshblu
+          .post '/v2/devices/cred-uuid/subscriptions/user_device_uuid/configure.sent'
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
           .reply 201
 
@@ -293,6 +298,9 @@ describe 'User Devices Spec', ->
 
       it "should subscribe the credentials-device to the user device's received messages", ->
         @createMessageReceivedSubscription.done()
+
+      it "should subscribe the credentials-device to the user device's configure.sent", ->
+        @createConfigureSentSubscription.done()
 
       it 'should return a 201', ->
         expect(@response.statusCode).to.equal 201
@@ -334,6 +342,11 @@ describe 'User Devices Spec', ->
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
           .reply 201
 
+        @deleteConfigureSentSubscription = @meshblu
+          .delete '/v2/devices/cred-uuid/subscriptions/user_device_uuid/configure.sent'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 201
+
         options =
           baseUrl: "http://localhost:#{@serverPort}"
           json: true
@@ -345,6 +358,9 @@ describe 'User Devices Spec', ->
 
       it "should delete the subscription from the credentials-device to the user device's received messages", ->
         @deleteMessageReceivedSubscription.done()
+
+      it "should delete the subscription from the credentials-device to the user device's configure.sent", ->
+        @deleteConfigureSentSubscription.done()
 
       it 'should return a 204', ->
         expect(@response.statusCode).to.equal 204

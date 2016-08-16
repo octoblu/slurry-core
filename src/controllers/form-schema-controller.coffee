@@ -1,3 +1,5 @@
+_ = require 'lodash'
+
 class FormSchemaController
   constructor: ({@messagesService, @configureService}) ->
     throw new Error 'messagesService is required' unless @messagesService?
@@ -10,10 +12,7 @@ class FormSchemaController
       @configureService.formSchema (error, configureSchema) =>
         return res.sendError error if error?
 
-        schema = {
-          message: messageSchema.message
-          configure: configureSchema.configure
-        }
+        schema = _.merge messageSchema, configureSchema
         return res.send schema
 
 module.exports = FormSchemaController
