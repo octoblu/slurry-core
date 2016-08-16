@@ -34,7 +34,7 @@ class Router
     throw new Error 'userDeviceManagerUrl is required' unless @userDeviceManagerUrl?
 
     @credentialsDeviceController = new CredentialsDeviceController {@credentialsDeviceService, @appOctobluHost, @serviceUrl, @userDeviceManagerUrl}
-    @formSchemaController        = new FormSchemaController {@messagesService}
+    @formSchemaController        = new FormSchemaController {@messagesService, @configureService}
     @messagesController          = new MessagesController {@credentialsDeviceService, @messagesService}
     @configureController         = new ConfigureController {@credentialsDeviceService, @configureService}
     @messageSchemaController     = new MessageSchemaController {@messagesService}

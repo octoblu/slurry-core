@@ -34,13 +34,13 @@ module.exports = (options) ->
       version: '2.0.0'
       whitelists:
         broadcast:
-          as:       [{uuid: authorizedUuid}]
+          as:       [{uuid: authorizedUuid}, {uuid: credentialsUuid}]
           received: [{uuid: authorizedUuid}]
           sent:     [{uuid: authorizedUuid}]
         configure:
           as:       [{uuid: authorizedUuid}]
           received: [{uuid: authorizedUuid}]
-          sent:     [{uuid: authorizedUuid}]
+          sent:     [{uuid: authorizedUuid}, {uuid: credentialsUuid}]
           update:   [{uuid: authorizedUuid}]
         discover:
           view:     [{uuid: authorizedUuid}]

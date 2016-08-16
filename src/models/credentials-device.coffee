@@ -35,7 +35,11 @@ class CredentialsDevice
       subscription = {subscriberUuid: @uuid, emitterUuid: userDevice.uuid, type: 'message.received'}
       @meshblu.createSubscription subscription, (error) =>
         return callback error if error?
-        return callback null, userDevice
+
+        subscription = {subscriberUuid: @uuid, emitterUuid: userDevice.uuid, type: 'configure.sent'}
+        @meshblu.createSubscription subscription, (error) =>
+          return callback error if error?
+          return callback null, userDevice
 
   deleteUserDeviceSubscription: ({userDeviceUuid}, callback) =>
     return callback @_userError 'Cannot remove the credentials subscription to itself', 403 if userDeviceUuid == @uuid
@@ -45,7 +49,15 @@ class CredentialsDevice
       type: 'message.received'
 
     @meshblu.deleteSubscription subscription, (error, ignored) =>
-      callback error
+      return callback error if error?
+
+      subscription =
+        emitterUuid: userDeviceUuid
+        subscriberUuid: @uuid
+        type: 'configure.sent'
+
+      @meshblu.deleteSubscription subscription, (error, ignored) =>
+        callback error
 
   getPublicDevice: (callback) =>
     @meshblu.device @serviceUuid, (error, credentialsDevice) =>
@@ -68,7 +80,9 @@ class CredentialsDevice
     update = credentialsDeviceUpdateGenerator {slurry, slurrySignature, @serviceUrl}
     @meshblu.updateDangerously @uuid, update, (error) =>
       return callback error if error?
-      @_subscribeToOwnMessagesReceived callback
+      @_subscribeToOwnMessagesReceived (error) =>
+        return callback error if error?
+        @_subscribeToOwnConfigureReceived callback
 
   _getConfigureSchemaUrl: =>
     uri = url.parse @serviceUrl
@@ -103,6 +117,12 @@ class CredentialsDevice
 
   _subscribeToOwnMessagesReceived: (callback) =>
     subscription = {subscriberUuid: @uuid, emitterUuid: @uuid, type: 'message.received'}
+    @meshblu.createSubscription subscription, (error, ignored) =>
+      return callback error if error?
+      return callback()
+
+  _subscribeToOwnConfigureReceived: (callback) =>
+    subscription = {subscriberUuid: @uuid, emitterUuid: @uuid, type: 'configure.received'}
     @meshblu.createSubscription subscription, (error, ignored) =>
       return callback error if error?
       return callback()
