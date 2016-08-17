@@ -1,6 +1,6 @@
 {
   "name": "slurry-core",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Put some description here",
   "keywords": [],
   "homepage": "https://github.com/octoblu/slurry-core",
@@ -47,6 +47,7 @@
     "express-meshblu-healthcheck": "^1.0.1",
     "express-package-version": "0.0.2",
     "express-send-error": "^1.1.0",
+    "glob": "^7.0.5",
     "jsonschema": "^1.1.0",
     "lodash": "^4.11.1",
     "meshblu-config": "^6.0.0",
