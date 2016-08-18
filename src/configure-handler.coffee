@@ -7,7 +7,7 @@ glob = require 'glob'
 NOT_FOUND_RESPONSE = {metadata: {code: 404, status: http.STATUS_CODES[404]}}
 
 class ConfigureHandler
-  constructor: ({ @slurrySpreader, @configurationsPath }={}) ->
+  constructor: ({ @slurrySpreader, @defaultConfiguration, @configurationsPath }={}) ->
     throw new Error 'ConfigureHandler requires configurationsPath' unless @configurationsPath?
     throw new Error 'ConfigureHandler requires slurrySpreader' unless @slurrySpreader?
     @configurations = @_getConfigurations()
@@ -16,7 +16,7 @@ class ConfigureHandler
     @slurrySpreader.on 'destroy', @_onSlurryDestroy
 
   onConfigure: ({auth, userDeviceUuid, encrypted, config}, callback) =>
-    selectedConfiguration = config.schemas?.selected?.configure
+    selectedConfiguration = config.schemas?.selected?.configure ? @defaultConfiguration ? 'Default'
     slurry = {
       auth
       selectedConfiguration
