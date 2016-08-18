@@ -74,9 +74,23 @@ class ConfigureHandler
 
     return configurations
 
+  _generateConfigureSlurry: =>
+    return {
+      type: 'object'
+      required: ['disabled']
+      properties:
+        disabled:
+          type: 'boolean'
+          title: 'Disabled'
+          description: 'Disable streaming'
+    }
+
   _configureSchemaFromJob: (job, key) =>
     configure = _.cloneDeep job.configure
     _.set configure, 'x-form-schema.angular', "configure.#{key}.angular"
+    slurryProp = _.get configure, 'properties.slurry'
+    newSlurryProp = _.merge slurryProp, @_generateConfigureSlurry()
+    _.set configure, 'properties.slurry', newSlurryProp
     configure.required = _.union ['metadata'], configure.required
     return configure
 
