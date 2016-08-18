@@ -23,6 +23,7 @@ class Router
       @serviceUrl
       @userDeviceManagerUrl
       @staticSchemasPath
+      @skipRedirectAfterApiAuth
     } = options
 
     throw new Error 'appOctobluHost is required' unless @appOctobluHost?
@@ -60,9 +61,12 @@ class Router
     app.use meshbluAuth.auth()
     app.use meshbluAuth.gatewayRedirect('/auth/octoblu')
 
+    upsert = @credentialsDeviceController.upsertWithRedirect
+    upsert = @credentialsDeviceController.upsertWithoutRedirect if @skipRedirectAfterApiAuth
+
     app.get  '/auth/api', passport.authenticate('api')
-    app.get  '/auth/api/callback', passport.authenticate('api'), @credentialsDeviceController.upsert
-    app.post  '/auth/api/callback', passport.authenticate('api'), @credentialsDeviceController.upsert
+    app.get  '/auth/api/callback', passport.authenticate('api'), upsert
+    app.post  '/auth/api/callback', passport.authenticate('api'), upsert
 
     app.post '/v1/messages', @messagesController.create
     app.post '/v1/configure', @configureController.create

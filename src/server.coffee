@@ -34,6 +34,7 @@ class Server
       @logFn
       @port
       @staticSchemasPath
+      @skipRedirectAfterApiAuth
     } = options
 
     throw new Error('apiStrategy is required') unless @apiStrategy?
@@ -80,7 +81,17 @@ class Server
       credentialsDeviceService  = new CredentialsDeviceService {@deviceType, imageUrl, @meshbluConfig, @serviceUrl}
       messagesService           = new MessagesService {@messageHandler, @schemas}
       configureService          = new ConfigureService {@configureHandler, @schemas}
-      router = new Router {credentialsDeviceService, messagesService, configureService, @appOctobluHost, @meshbluConfig, @serviceUrl, @userDeviceManagerUrl, @staticSchemasPath}
+      router = new Router {
+        credentialsDeviceService
+        messagesService
+        configureService
+        @appOctobluHost
+        @meshbluConfig
+        @serviceUrl
+        @userDeviceManagerUrl
+        @staticSchemasPath
+        @skipRedirectAfterApiAuth
+      }
       router.route app
 
       @server = app.listen @port, callback
