@@ -1,10 +1,6 @@
-fs   = require 'fs'
-http = require 'http'
 _    = require 'lodash'
 path = require 'path'
 glob = require 'glob'
-
-NOT_FOUND_RESPONSE = {metadata: {code: 404, status: http.STATUS_CODES[404]}}
 
 class ConfigureHandler
   constructor: ({ @slurrySpreader, @defaultConfiguration, @configurationsPath }={}) ->
@@ -35,20 +31,23 @@ class ConfigureHandler
       encrypted
       auth
     } = slurry
-    slurryStream = @configurations[selectedConfiguration]
-    return unless slurryStream?
+    slurryConfiguration = @configurations[selectedConfiguration]
+    return unless slurryConfiguration?
 
     @_slurries[uuid]?.destroy()
 
     return if config.slurry?.disabled
-    slurryStream.action {encrypted, auth, userDeviceUuid: uuid}, config, (error, slurryStream) =>
+    slurryConfiguration.action {encrypted, auth, userDeviceUuid: uuid}, config, (error, slurryStream) =>
       return console.error error.stack if error?
       @_slurries[uuid] = slurryStream
+      @_slurries[uuid].__secretSquirelReconnect = => @_onSlurryCreate slurry
+      @_slurries[uuid].on 'end', @_slurries[uuid].__secretSquirelReconnect
 
   _onSlurryDestroy: (slurry) =>
     {
       uuid
     } = slurry
+    @_slurries[uuid]?.removeListener 'end', @_slurries[uuid]?.__secretSquirelReconnect
     @_slurries[uuid]?.destroy()
 
   formSchema: (callback) =>
