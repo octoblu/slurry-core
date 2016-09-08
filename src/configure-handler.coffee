@@ -45,9 +45,9 @@ class ConfigureHandler
     { uuid } = slurry
     slurryStream = @_slurryStreams[uuid]
     return unless slurryStream?
-    slurryStream.removeListener 'end', slurryStream.__slurryOnEnd
+    slurryStream.removeListener 'close', slurryStream.__slurryOnClose
     slurryStream.removeListener 'error', slurryStream.__slurryOnError
-    delete slurryStream.__slurryOnEnd
+    delete slurryStream.__slurryOnClose
     throw new Error 'slurryStream must implement destroy method' unless _.isFunction slurryStream?.destroy
     slurryStream.destroy()
     delete @_slurryStreams[uuid]
@@ -69,22 +69,23 @@ class ConfigureHandler
     slurryConfiguration.action {encrypted, auth, userDeviceUuid: uuid}, config, (error, slurryStream) =>
       return console.error error.stack if error?
 
-      slurryStream.__slurryOnEnd = =>
-        @_onSlurryEnd slurry
+      slurryStream.__slurryOnClose = =>
+        @_onSlurryClose slurry
 
       slurryStream.__slurryOnError = (error) =>
         console.error error.stack
-        @_onSlurryEnd slurry
+        @_onSlurryClose slurry
 
-      slurryStream.on 'end', slurryStream.__slurryOnEnd
-      slurryStream.on 'error', slurryStream.__slurryOnEnd
+      throw new Error 'slurryStream must implement on method' unless _.isFunction slurryStream?.on
+      slurryStream.on 'close', slurryStream.__slurryOnClose
+      slurryStream.on 'error', slurryStream.__slurryOnClose
       @_slurryStreams[uuid] = slurryStream
 
   _onSlurryDestroy: (slurry) =>
     @_destroySlurry slurry
 
-  _onSlurryEnd: (slurry) =>
-    @slurrySpreader.end slurry, _.noop
+  _onSlurryClose: (slurry) =>
+    @slurrySpreader.close slurry, _.noop
 
   _formSchemaFromConfigurations: (configurations) =>
     return {
