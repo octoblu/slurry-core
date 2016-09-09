@@ -74,7 +74,7 @@ class ConfigureHandler
 
       slurryStream.__slurryOnError = (error) =>
         console.error error.stack
-        @_onSlurryClose slurry
+        @_destroySlurry slurry
 
       throw new Error 'slurryStream must implement on method' unless _.isFunction slurryStream?.on
       slurryStream.on 'close', slurryStream.__slurryOnClose
