@@ -78,7 +78,7 @@ class ConfigureHandler
 
       throw new Error 'slurryStream must implement on method' unless _.isFunction slurryStream?.on
       slurryStream.on 'close', slurryStream.__slurryOnClose
-      slurryStream.on 'error', slurryStream.__slurryOnClose
+      slurryStream.on 'error', slurryStream.__slurryOnError
       @_slurryStreams[uuid] = slurryStream
 
   _onSlurryDestroy: (slurry) =>
