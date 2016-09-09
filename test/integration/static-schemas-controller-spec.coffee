@@ -47,7 +47,8 @@ describe 'static schemas', ->
       serviceUrl: 'http://octoblu.xxx'
       deviceType: 'slurry-slurryr'
       meshbluConfig:
-        server: 'localhost'
+        hostname: 'localhost'
+        protocol: 'http'
         port: 0xd00d
         uuid: 'peter'
         token: 'i-could-eat'
