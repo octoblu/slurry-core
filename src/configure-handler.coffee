@@ -3,7 +3,7 @@ path = require 'path'
 glob = require 'glob'
 
 class ConfigureHandler
-  constructor: ({ @slurrySpreader, @defaultConfiguration, @configurationsPath }={}) ->
+  constructor: ({ @slurrySpreader, @defaultConfiguration, @configurationsPath, @meshbluConfig }={}) ->
     throw new Error 'ConfigureHandler requires configurationsPath' unless @configurationsPath?
     throw new Error 'ConfigureHandler requires slurrySpreader' unless @slurrySpreader?
     @configurations = @_getConfigurations()
@@ -74,6 +74,7 @@ class ConfigureHandler
 
       slurryStream.__slurryOnError = (error) =>
         console.error error.stack
+        @_updateStatusDeviceWithError {auth, userDeviceUuid, error}
         @_destroySlurry slurry
 
       throw new Error 'slurryStream must implement on method' unless _.isFunction slurryStream?.on
@@ -114,5 +115,21 @@ class ConfigureHandler
         console.error error.stack
 
     return configurations
+
+  _updateStatusDeviceWithError: ({auth, userDeviceUuid, error}, callback=_.noop) =>
+    meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
+    meshblu.device userDeviceUuid, (newError, {statusDevice}={}) =>
+      return callback() if newError?
+      return callback() unless statusDevice?
+      update =
+        $push:
+          errors:
+            $each: [
+              date: moment.utc().format()
+              code: error.code ? 500
+              message: error.message
+            ]
+            $slice: -99
+      meshblu.updateDangerously statusDevice, update, as: userDeviceUuid, callback
 
 module.exports = ConfigureHandler

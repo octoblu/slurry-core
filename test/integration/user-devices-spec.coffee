@@ -210,6 +210,7 @@ describe 'User Devices Spec', ->
         userAuth = new Buffer('some-uuid:some-token').toString 'base64'
         serviceAuth = new Buffer('peter:i-could-eat').toString 'base64'
         credentialsDeviceAuth = new Buffer('cred-uuid:cred-token2').toString 'base64'
+        userDeviceAuth = new Buffer('user_device_uuid:user_device_token').toString 'base64'
 
         @meshblu
           .post '/authenticate'
@@ -274,6 +275,35 @@ describe 'User Devices Spec', ->
                   sent: [{uuid: 'some-uuid'}]
                   from: [{uuid: 'some-uuid'}]
           .reply 201, uuid: 'user_device_uuid', token: 'user_device_token'
+
+        @createStatusDevice = @meshblu
+          .post '/devices'
+          .send
+            type: "status-device"
+            owner: "user_device_uuid"
+            meshblu:
+              whitelists:
+                version: "2.0.0"
+                configure:
+                  update: [
+                    {uuid: "user_device_uuid"}
+                    {uuid: "some-uuid"}
+                  ]
+                  sent: [
+                    {uuid: "user_device_uuid"}
+                    {uuid: "some-uuid"}
+                  ]
+                discover:
+                  view: [
+                    {uuid: "user_device_uuid"}
+                    {uuid: "some-uuid"}
+                  ]
+          .reply 201, {}
+
+        @meshblu
+          .put '/v2/devices/user_device_uuid'
+          .set 'Authorization', "Basic #{userDeviceAuth}"
+          .reply 204
 
         @createMessageReceivedSubscription = @meshblu
           .post '/v2/devices/cred-uuid/subscriptions/user_device_uuid/message.received'

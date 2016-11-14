@@ -2,14 +2,14 @@
 _           = require 'lodash'
 Encryption  = require 'meshblu-encryption'
 MeshbluConfig = require 'meshblu-config'
-MeshbluHttp = require 'meshblu-http'
+MeshbluHTTP = require 'meshblu-http'
 
 debug = require('debug')('slurry-core:configure-service')
 
 MISSING_ROUTE_HEADER = 'Missing x-meshblu-route header in request'
 
 class ConfigureService
-  constructor: ({@configureHandler}) ->
+  constructor: ({@configureHandler, @meshbluConfig}) ->
     throw new Error 'configureHandler is required' unless @configureHandler?
     @validator = new Validator
 
@@ -27,11 +27,28 @@ class ConfigureService
 
     encryption = Encryption.fromJustGuess auth.privateKey
     encrypted  = encryption.decrypt slurry.encrypted
-    meshbluConfig = new MeshbluConfig {auth}
-    meshbluHttp = new MeshbluHttp meshbluConfig.toJSON()
+    meshbluHttp = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshbluHttp.generateAndStoreToken auth.uuid, (error, auth) =>
       return callback error if error?
-      @configureHandler.onConfigure {auth, userDeviceUuid, encrypted, config}, callback
+      @configureHandler.onConfigure {auth, userDeviceUuid, encrypted, config}, (newError) =>
+        return callback newError if newError?
+        @_updateStatusDeviceWithError {auth, userDeviceUuid, error}, callback
+
+  _updateStatusDeviceWithError: ({auth, userDeviceUuid, error}, callback) =>
+    meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
+    meshblu.device userDeviceUuid, (newError, {statusDevice}={}) =>
+      return callback() if newError?
+      return callback() unless statusDevice?
+      update =
+        $push:
+          errors:
+            $each: [
+              date: moment.utc().format()
+              code: error.code ? 500
+              message: error.message
+            ]
+            $slice: -99
+      meshblu.updateDangerously statusDevice, update, as: userDeviceUuid, callback
 
   _userError: (configure, code) =>
     error = new Error configure

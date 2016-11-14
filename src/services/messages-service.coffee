@@ -9,7 +9,7 @@ MISSING_METADATA     = 'Message is missing required property "metadata"'
 MISSING_ROUTE_HEADER = 'Missing x-meshblu-route header in request'
 
 class MessagesService
-  constructor: ({@messageHandler}) ->
+  constructor: ({@messageHandler, @meshbluConfig}) ->
     throw new Error 'messageHandler is required' unless @messageHandler?
     @validator = new Validator
 
@@ -32,7 +32,7 @@ class MessagesService
       metadata: metadata
       data:     response.data
 
-    meshblu = new MeshbluHTTP auth
+    meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.message message, as: userDeviceUuid, callback
 
   replyWithError: ({auth, error, route, respondTo}, callback) =>
@@ -49,8 +49,29 @@ class MessagesService
         error:
           message: error.message
 
-    meshblu = new MeshbluHTTP auth
-    meshblu.message message, as: userDeviceUuid, callback
+    meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
+    meshblu.message message, as: userDeviceUuid, (newError) =>
+      return callback newError if newError?
+      @_updateStatusDeviceWithError {auth, senderUuid, userDeviceUuid, error, respondTo}, callback
+
+  _updateStatusDeviceWithError: ({auth, senderUuid, userDeviceUuid, error, respondTo}, callback) =>
+    meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
+    meshblu.device userDeviceUuid, (newError, {statusDevice}={}) =>
+      return callback() if newError?
+      return callback() unless statusDevice?
+      update =
+        $push:
+          errors:
+            $each: [
+              senderUuid: senderUuid
+              date: moment.utc().format()
+              metadata:
+                to: respondTo
+              code: error.code ? 500
+              message: error.message
+            ]
+            $slice: -99
+      meshblu.updateDangerously statusDevice, update, as: userDeviceUuid, callback
 
   responseSchema: (callback) =>
     @messageHandler.responseSchema callback
