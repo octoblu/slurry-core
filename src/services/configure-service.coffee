@@ -1,7 +1,7 @@
 {Validator} = require 'jsonschema'
 _           = require 'lodash'
 Encryption  = require 'meshblu-encryption'
-MeshbluConfig = require 'meshblu-config'
+moment      = require 'moment'
 MeshbluHTTP = require 'meshblu-http'
 
 debug = require('debug')('slurry-core:configure-service')
