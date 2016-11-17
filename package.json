@@ -1,6 +1,6 @@
 {
   "name": "slurry-core",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "description": "Put some description here",
   "keywords": [],
   "homepage": "https://github.com/octoblu/slurry-core",
@@ -53,6 +53,7 @@
     "meshblu-config": "^6.0.0",
     "meshblu-encryption": "^2.0.0",
     "meshblu-http": "^7.2.0",
+    "moment": "^2.16.0",
     "morgan": "^1.6.1",
     "passport": "^0.3.2",
     "passport-octoblu": "^3.0.0",

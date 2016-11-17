@@ -1,6 +1,8 @@
-_    = require 'lodash'
-path = require 'path'
-glob = require 'glob'
+_           = require 'lodash'
+path        = require 'path'
+glob        = require 'glob'
+MeshbluHTTP = require 'meshblu-http'
+moment      = require 'moment'
 
 class ConfigureHandler
   constructor: ({ @slurrySpreader, @defaultConfiguration, @configurationsPath, @meshbluConfig }={}) ->
@@ -68,13 +70,14 @@ class ConfigureHandler
 
     slurryConfiguration.action {encrypted, auth, userDeviceUuid: uuid}, config, (error, slurryStream) =>
       return console.error error.stack if error?
+      return @_onSlurryClose slurry unless slurryStream?
 
       slurryStream.__slurryOnClose = =>
         @_onSlurryClose slurry
 
       slurryStream.__slurryOnError = (error) =>
         console.error error.stack
-        @_updateStatusDeviceWithError {auth, userDeviceUuid, error}
+        @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error}
         @_destroySlurry slurry
 
       throw new Error 'slurryStream must implement on method' unless _.isFunction slurryStream?.on
