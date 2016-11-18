@@ -40,16 +40,23 @@ class CredentialsDevice
         subscription = {subscriberUuid: @uuid, emitterUuid: userDevice.uuid, type: 'configure.sent'}
         @meshblu.createSubscription subscription, (error) =>
           return callback error if error?
-          @createStatusDevice {userDeviceUuid: userDevice.uuid, authorizedUuid}, (error, {uuid}={}) =>
+          statusDeviceOptions = {credentialsDeviceUuid: @uuid, userDeviceUuid: userDevice.uuid, authorizedUuid}
+          @createStatusDevice statusDeviceOptions, (error, {uuid}={}) =>
             callback error if error?
-            @updateUserStatusDevice {userDeviceUuid: userDevice.uuid, userDeviceToken: userDevice.token, statusDeviceUuid: uuid}, (error) =>
+
+            userDeviceOptions = {
+              userDeviceUuid: userDevice.uuid
+              userDeviceToken: userDevice.token
+              statusDeviceUuid: uuid
+            }
+            @updateUserDeviceWithStatusDevice userDeviceOptions, (error) =>
               callback error, userDevice
 
-  createStatusDevice: ({userDeviceUuid, authorizedUuid}, callback) =>
-    statusDeviceConfig = statusDeviceConfigGenerator {userDeviceUuid, authorizedUuid}
+  createStatusDevice: ({credentialsDeviceUuid, userDeviceUuid, authorizedUuid}, callback) =>
+    statusDeviceConfig = statusDeviceConfigGenerator {credentialsDeviceUuid, userDeviceUuid, authorizedUuid}
     @meshblu.register statusDeviceConfig, callback
 
-  updateUserStatusDevice: ({userDeviceUuid, userDeviceToken, statusDeviceUuid}, callback) =>
+  updateUserDeviceWithStatusDevice: ({userDeviceUuid, userDeviceToken, statusDeviceUuid}, callback) =>
     userDeviceMeshblu = new MeshbluHTTP _.defaults {uuid: userDeviceUuid, token: userDeviceToken}, @meshbluConfig
     userDeviceMeshblu.updateDangerously userDeviceUuid, $set: statusDevice: statusDeviceUuid, callback
 

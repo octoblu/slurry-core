@@ -1,5 +1,5 @@
 
-module.exports = ({userDeviceUuid, authorizedUuid}) ->
+module.exports = ({credentialsDeviceUuid, userDeviceUuid, authorizedUuid}) ->
   type: 'status-device'
   owner: userDeviceUuid
   meshblu:
@@ -7,6 +7,7 @@ module.exports = ({userDeviceUuid, authorizedUuid}) ->
       version: '2.0.0'
       configure:
         update: [
+          {uuid: credentialsDeviceUuid}
           {uuid: userDeviceUuid}
           {uuid: authorizedUuid}
         ]
@@ -16,6 +17,7 @@ module.exports = ({userDeviceUuid, authorizedUuid}) ->
         ]
       discover:
         view: [
+          {uuid: credentialsDeviceUuid}
           {uuid: userDeviceUuid}
           {uuid: authorizedUuid}
         ]

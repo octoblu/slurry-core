@@ -3,6 +3,7 @@ path        = require 'path'
 glob        = require 'glob'
 MeshbluHTTP = require 'meshblu-http'
 moment      = require 'moment'
+debug       = require('debug')('slurry-core:configure-handler')
 
 class ConfigureHandler
   constructor: ({ @slurrySpreader, @defaultConfiguration, @configurationsPath, @meshbluConfig }={}) ->
@@ -69,6 +70,7 @@ class ConfigureHandler
     return if config.slurry?.disabled
 
     slurryConfiguration.action {encrypted, auth, userDeviceUuid: uuid}, config, (error, slurryStream) =>
+      @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error} if error?
       return console.error error.stack if error?
       return @_onSlurryClose slurry unless slurryStream?
 
@@ -120,9 +122,12 @@ class ConfigureHandler
     return configurations
 
   _updateStatusDeviceWithError: ({auth, userDeviceUuid, error}, callback=_.noop) =>
+    debug '_updateStatusDeviceWithError', userDeviceUuid
+
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.device userDeviceUuid, (newError, {statusDevice}={}) =>
-      return callback() if newError?
+      debug '_updateStatusDeviceWithError:statusDevice', error, statusDevice
+      return callback newError if newError?
       return callback() unless statusDevice?
       update =
         $push:

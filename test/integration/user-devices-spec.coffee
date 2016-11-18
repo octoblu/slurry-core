@@ -286,6 +286,7 @@ describe 'User Devices Spec', ->
                 version: "2.0.0"
                 configure:
                   update: [
+                    {uuid: "cred-uuid"}
                     {uuid: "user_device_uuid"}
                     {uuid: "some-uuid"}
                   ]
@@ -295,6 +296,7 @@ describe 'User Devices Spec', ->
                   ]
                 discover:
                   view: [
+                    {uuid: "cred-uuid"}
                     {uuid: "user_device_uuid"}
                     {uuid: "some-uuid"}
                   ]
