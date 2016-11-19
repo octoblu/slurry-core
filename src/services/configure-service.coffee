@@ -35,6 +35,7 @@ class ConfigureService
         @_updateStatusDeviceWithError {auth, userDeviceUuid, error}, callback
 
   _updateStatusDeviceWithError: ({auth, userDeviceUuid, error}, callback) =>
+    return callback() unless error?
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.device userDeviceUuid, (newError, {statusDevice}={}) =>
       return callback() if newError?
