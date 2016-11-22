@@ -267,7 +267,7 @@ describe 'User Devices Spec', ->
                   sent: [{uuid: 'some-uuid'}, {uuid: 'cred-uuid'}]
                   update: [{uuid: 'some-uuid'}]
                 discover:
-                  view: [{uuid: 'some-uuid'}]
+                  view: [{uuid: 'some-uuid'}, {uuid: 'cred-uuid'}]
                   as: [{uuid: 'some-uuid'}]
                 message:
                   as: [{uuid: 'some-uuid'}, {uuid: 'cred-uuid'}]
