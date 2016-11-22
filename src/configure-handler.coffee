@@ -46,8 +46,7 @@ class ConfigureHandler
     configure.required = _.union ['metadata'], configure.required
     return configure
 
-  _destroySlurry: (slurry) =>
-    { uuid } = slurry
+  _destroySlurry: ({ uuid }) =>
     slurryStream = @_slurryStreams[uuid]
     return unless slurryStream?
     slurryStream.removeListener 'close', slurryStream.__slurryOnClose
@@ -68,13 +67,13 @@ class ConfigureHandler
     slurryConfiguration = @configurations[selectedConfiguration]
     return unless slurryConfiguration?
 
-    @_destroySlurry slurry
+    @_destroySlurry { uuid }
     return if config.slurry?.disabled
 
     slurryConfiguration.action {encrypted, auth, userDeviceUuid: uuid}, config, (error, slurryStream) =>
       @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error} if error?
       return console.error error.stack if error?
-      return @_onSlurryClose slurry unless slurryStream?
+      return @_onSlurryDelay slurry unless slurryStream?
 
       slurryStream.__slurryOnClose = =>
         @_onSlurryClose slurry
@@ -85,6 +84,7 @@ class ConfigureHandler
         @_destroySlurry slurry
 
       slurryStream.__slurryOnDelay = (error, timeout=THIRTY_SECONDS) =>
+        throw new Error 'parameter "error" must pass _.isError' unless _.isError error
         console.error error.stack
         @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error}
         @_onSlurryDelay {uuid, timeout}
@@ -96,11 +96,12 @@ class ConfigureHandler
       @_slurryStreams[uuid] = slurryStream
 
   _onSlurryDelay: ({uuid, timeout}) =>
+    @_destroySlurry { uuid }
     @slurrySpreader.delay {uuid, timeout}, (error) =>
       return console.error error if error?
 
-  _onSlurryDestroy: (slurry) =>
-    @_destroySlurry slurry
+  _onSlurryDestroy: ({ uuid }) =>
+    @_destroySlurry { uuid }
 
   _onSlurryClose: (slurry) =>
     @slurrySpreader.close slurry, _.noop
@@ -134,11 +135,11 @@ class ConfigureHandler
     return configurations
 
   _updateStatusDeviceWithError: ({auth, userDeviceUuid, error}, callback=_.noop) =>
-    debug '_updateStatusDeviceWithError', userDeviceUuid
+    debug '_updateStatusDeviceWithError', userDeviceUuid, error
 
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.device userDeviceUuid, (newError, {statusDevice}={}) =>
-      debug '_updateStatusDeviceWithError:statusDevice', error, statusDevice
+      debug '_updateStatusDeviceWithError:statusDevice', newError?.message, statusDevice
       return callback newError if newError?
       return callback() unless statusDevice?
       update =
@@ -150,6 +151,6 @@ class ConfigureHandler
               message: error.message
             ]
             $slice: -99
-      meshblu.updateDangerously statusDevice, update, as: userDeviceUuid, callback
+      meshblu.updateDangerously statusDevice, update, callback
 
 module.exports = ConfigureHandler

@@ -1,17 +1,10 @@
-cors               = require 'cors'
-morgan             = require 'morgan'
-express            = require 'express'
-bodyParser         = require 'body-parser'
-cookieParser       = require 'cookie-parser'
-cookieSession      = require 'cookie-session'
-errorHandler       = require 'errorhandler'
-meshbluHealthcheck = require 'express-meshblu-healthcheck'
-sendError          = require 'express-send-error'
-MeshbluHTTP        = require 'meshblu-http'
-path               = require 'path'
-passport           = require 'passport'
-favicon            = require 'serve-favicon'
-expressVersion     = require 'express-package-version'
+cors           = require 'cors'
+cookieParser   = require 'cookie-parser'
+cookieSession  = require 'cookie-session'
+MeshbluHTTP    = require 'meshblu-http'
+passport       = require 'passport'
+
+octobluExpress = require 'express-octoblu'
 
 Router                   = require './router'
 CredentialsDeviceService = require './services/credentials-device-service'
@@ -59,21 +52,12 @@ class Server
     passport.use 'octoblu', @octobluStrategy
     passport.use 'api', @apiStrategy
 
-    app = express()
-    app.use favicon path.join(__dirname, '../favicon.ico')
-    app.use meshbluHealthcheck()
-    app.use expressVersion format: '{"version": "%s"}'
-    app.use morgan 'dev', immediate: false unless @disableLogging
+    app = octobluExpress({ @disableLogging, @logFn })
     app.use cors(exposedHeaders: ['Location'])
-    app.use errorHandler()
     app.use cookieSession secret: @meshbluConfig.token
     app.use cookieParser()
     app.use passport.initialize()
     app.use passport.session()
-    app.use bodyParser.urlencoded limit: '1mb', extended : true
-    app.use bodyParser.json limit : '1mb'
-    app.use sendError {@logFn}
-    app.options '*', cors()
 
     meshblu = new MeshbluHTTP @meshbluConfig
     meshblu.whoami (error, device) =>

@@ -45,6 +45,7 @@
     "express": "^4.13.3",
     "express-meshblu-auth": "^7.0.0",
     "express-meshblu-healthcheck": "^1.0.1",
+    "express-octoblu": "^1.2.0",
     "express-package-version": "0.0.2",
     "express-send-error": "^1.1.0",
     "glob": "^7.0.6",
