@@ -29,17 +29,19 @@ class ConfigureService
     encrypted  = encryption.decrypt slurry.encrypted
     meshbluHttp = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshbluHttp.generateAndStoreToken auth.uuid, (error, auth) =>
-      return callback error if error?
-      @configureHandler.onConfigure {auth, userDeviceUuid, encrypted, config}, (newError) =>
-        return callback newError if newError?
-        @_updateStatusDeviceWithError {auth, userDeviceUuid, error}, callback
+      return @_updateStatusDeviceWithError {auth, userDeviceUuid, error}, callback if error?
+
+      @configureHandler.onConfigure {auth, userDeviceUuid, encrypted, config}, (error) =>
+        return @_updateStatusDeviceWithError {auth, userDeviceUuid, error}, callback
 
   _updateStatusDeviceWithError: ({auth, userDeviceUuid, error}, callback) =>
     return callback() unless error?
+
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.device userDeviceUuid, (newError, {statusDevice}={}) =>
-      return callback() if newError?
-      return callback() unless statusDevice?
+      console.error newError.stack if newError?
+      return callback(error) if newError?
+      return callback(error) unless statusDevice?
       update =
         $push:
           errors:
@@ -49,7 +51,10 @@ class ConfigureService
               message: error.message
             ]
             $slice: -99
-      meshblu.updateDangerously statusDevice, update, as: userDeviceUuid, callback
+      meshblu.updateDangerously statusDevice, update, as: userDeviceUuid, (newError) =>
+        console.error newError.stack if newError?
+        return callback error
+
 
   _userError: (configure, code) =>
     error = new Error configure

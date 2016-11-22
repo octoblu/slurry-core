@@ -19,7 +19,7 @@ MessagesService          = require './services/messages-service'
 ConfigureService         = require './services/configure-service'
 
 class Server
-  constructor: (options)->
+  constructor: (options) ->
     {
       @apiStrategy
       @appOctobluHost
@@ -27,7 +27,8 @@ class Server
       @meshbluConfig
       @messageHandler
       @configureHandler
-      @octobluStrategy,@schemas
+      @octobluStrategy
+      @schemas
       @serviceUrl
       @userDeviceManagerUrl
       @disableLogging
@@ -37,16 +38,16 @@ class Server
       @skipRedirectAfterApiAuth
     } = options
 
-    throw new Error('apiStrategy is required') unless @apiStrategy?
-    throw new Error('appOctobluHost is required') unless @appOctobluHost?
-    throw new Error('deviceType is required') unless @deviceType?
-    throw new Error('meshbluConfig is required') unless @meshbluConfig?
-    throw new Error('messageHandler is required') unless @messageHandler?
-    throw new Error('configureHandler is required') unless @configureHandler?
-    throw new Error('octobluStrategy is required') unless @octobluStrategy?
-    throw new Error('schemas not allowed') if @schemas?
-    throw new Error('serviceUrl is required') unless @serviceUrl?
-    throw new Error('userDeviceManagerUrl is required') unless @userDeviceManagerUrl?
+    throw new Error 'schemas not allowed' if @schemas?
+    throw new Error 'Missing required parameter: apiStrategy'          unless @apiStrategy?
+    throw new Error 'Missing required parameter: appOctobluHost'       unless @appOctobluHost?
+    throw new Error 'Missing required parameter: deviceType'           unless @deviceType?
+    throw new Error 'Missing required parameter: meshbluConfig'        unless @meshbluConfig?
+    throw new Error 'Missing required parameter: messageHandler'       unless @messageHandler?
+    throw new Error 'Missing required parameter: configureHandler'     unless @configureHandler?
+    throw new Error 'Missing required parameter: octobluStrategy'      unless @octobluStrategy?
+    throw new Error 'Missing required parameter: serviceUrl'           unless @serviceUrl?
+    throw new Error 'Missing required parameter: userDeviceManagerUrl' unless @userDeviceManagerUrl?
 
   address: =>
     @server.address()

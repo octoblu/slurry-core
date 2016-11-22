@@ -1,4 +1,3 @@
-_     = require 'lodash'
 debug = require('debug')('slurry-core:messages-controller')
 
 class ConfigureController
@@ -14,8 +13,8 @@ class ConfigureController
       debug 'credentialsDeviceService.getSlurryByUuid', error
       return res.sendError error if error?
 
-      @configureService.configure {auth, slurry, config, route}, (error, response) =>
-        debug 'configureService.save', error
+      @configureService.configure {auth, slurry, config, route}, (error) =>
+        debug 'configureService.configure', error
         return res.sendError error if error?
 
         res.sendStatus 201

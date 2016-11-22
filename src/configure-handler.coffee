@@ -5,6 +5,8 @@ MeshbluHTTP = require 'meshblu-http'
 moment      = require 'moment'
 debug       = require('debug')('slurry-core:configure-handler')
 
+THIRTY_SECONDS = 30 * 1000
+
 class ConfigureHandler
   constructor: ({ @slurrySpreader, @defaultConfiguration, @configurationsPath, @meshbluConfig }={}) ->
     throw new Error 'ConfigureHandler requires configurationsPath' unless @configurationsPath?
@@ -82,10 +84,20 @@ class ConfigureHandler
         @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error}
         @_destroySlurry slurry
 
+      slurryStream.__slurryOnDelay = (error, timeout=THIRTY_SECONDS) =>
+        console.error error.stack
+        @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error}
+        @_onSlurryDelay {uuid, timeout}
+
       throw new Error 'slurryStream must implement on method' unless _.isFunction slurryStream?.on
       slurryStream.on 'close', slurryStream.__slurryOnClose
       slurryStream.on 'error', slurryStream.__slurryOnError
+      slurryStream.on 'delay', slurryStream.__slurryOnDelay
       @_slurryStreams[uuid] = slurryStream
+
+  _onSlurryDelay: ({uuid, timeout}) =>
+    @slurrySpreader.delay {uuid, timeout}, (error) =>
+      return console.error error if error?
 
   _onSlurryDestroy: (slurry) =>
     @_destroySlurry slurry
