@@ -98,6 +98,7 @@ class ConfigureHandler
   _onSlurryDelay: ({uuid, timeout}) =>
     @_destroySlurry { uuid }
     @slurrySpreader.delay {uuid, timeout}, (error) =>
+      @_slurryStreams[uuid].emit('shutdown')
       return console.error error if error?
 
   _onSlurryDestroy: ({ uuid }) =>
