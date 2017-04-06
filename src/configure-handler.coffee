@@ -74,8 +74,10 @@ class ConfigureHandler
       @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error} if error?
 
       if error?
-        @_onSlurryClose slurry
-        return console.error error.stack
+        console.error error.stack
+        @slurrySpreader.delay {uuid, timeout:THIRTY_SECONDS}, _.noop if error.code == 401
+        @slurrySpreader.close {uuid}, _.noop
+        return
 
       return @_onSlurryDelay slurry unless slurryStream?
 
@@ -102,7 +104,7 @@ class ConfigureHandler
   _onSlurryDelay: ({uuid, timeout}) =>
     @_destroySlurry { uuid }
     @slurrySpreader.delay {uuid, timeout}, (error) =>
-      @_slurryStreams[uuid].emit('shutdown')
+      @_slurryStreams[uuid].destroy?()
       return console.error error if error?
 
   _onSlurryDestroy: ({ uuid }) =>
