@@ -72,7 +72,11 @@ class ConfigureHandler
 
     slurryConfiguration.action {encrypted, auth, userDeviceUuid: uuid}, config, (error, slurryStream) =>
       @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error} if error?
-      return console.error error.stack if error?
+
+      if error?
+        @_onSlurryClose slurry
+        return console.error error.stack
+
       return @_onSlurryDelay slurry unless slurryStream?
 
       slurryStream.__slurryOnClose = =>
