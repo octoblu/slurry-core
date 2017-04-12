@@ -144,9 +144,9 @@ class ConfigureHandler
 
   _updateOnlineUntil: ({slurry, onlineUntil}) =>
     debug '_updateOnlineUntil', slurry?.uuid, onlineUntil
-    {auth, config} = slurry
+    {auth, config, uuid} = slurry
     {statusDevice} = config
-    @_addStatusDeviceRef {auth, statusDevice} unless @_hasStatusDeviceRef config
+    @_addStatusDeviceRef {uuid, auth, statusDevice} unless @_hasStatusDeviceRef config
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.update statusDevice, {
       'status.onlineUntil': onlineUntil
@@ -155,10 +155,10 @@ class ConfigureHandler
   _hasStatusDeviceRef: (config) =>
     return config?.status?.$ref?
 
-  _addStatusDeviceRef: ({auth, statusDevice}) =>
-    debug '_addStatusDeviceRef', auth.uuid, statusDevice
+  _addStatusDeviceRef: ({uuid, auth, statusDevice}) =>
+    debug '_addStatusDeviceRef', uuid, statusDevice
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
-    meshblu.update auth.uuid, {
+    meshblu.update uuid, {
       status: $ref: "meshbludevice://#{statusDevice}/#/status"
     }, (error) => console.error error.stack if error?
 
