@@ -143,6 +143,7 @@ class ConfigureHandler
     return configurations
 
   _updateOnlineUntil: ({slurry, onlineUntil}) =>
+    debug '_updateOnlineUntil', slurry?.uuid, onlineUntil
     {auth, config} = slurry
     {statusDevice} = config
     @_addStatusDeviceRef {auth, statusDevice} unless @_hasStatusDeviceRef config
@@ -155,6 +156,7 @@ class ConfigureHandler
     return config?.status?.$ref?
 
   _addStatusDeviceRef: ({auth, statusDevice}) =>
+    debug '_addStatusDeviceRef', auth.uuid, statusDevice
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.update auth.uuid, {
       status: $ref: "meshbludevice://#{statusDevice}/#/status"
