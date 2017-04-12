@@ -58,7 +58,11 @@ class CredentialsDevice
 
   updateUserDeviceWithStatusDevice: ({userDeviceUuid, userDeviceToken, statusDeviceUuid}, callback) =>
     userDeviceMeshblu = new MeshbluHTTP _.defaults {uuid: userDeviceUuid, token: userDeviceToken}, @meshbluConfig
-    userDeviceMeshblu.updateDangerously userDeviceUuid, $set: statusDevice: statusDeviceUuid, callback
+    update =
+      $set:
+        statusDevice: statusDeviceUuid
+        status: $ref: "meshbludevice://#{statusDeviceUuid}/#/status"
+    userDeviceMeshblu.updateDangerously userDeviceUuid, update, callback
 
   deleteUserDeviceSubscription: ({userDeviceUuid}, callback) =>
     return callback @_userError 'Cannot remove the credentials subscription to itself', 403 if userDeviceUuid == @uuid
