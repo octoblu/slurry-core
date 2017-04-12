@@ -15,6 +15,7 @@ class ConfigureHandler
     @_slurryStreams = {}
     @slurrySpreader.on 'create', @_onSlurryCreate
     @slurrySpreader.on 'destroy', @_onSlurryDestroy
+    @slurrySpreader.on 'onlineUntil', @_updateOnlineUntil
 
   configureSchema: (callback) =>
     callback null, @_configureSchemaFromConfigurations @configurations
@@ -140,6 +141,24 @@ class ConfigureHandler
         console.error error.stack
 
     return configurations
+
+  _updateOnlineUntil: ({slurry, onlineUntil}) =>
+    {auth, config} = slurry
+    {statusDevice} = config
+    @_addStatusDeviceRef {auth, statusDevice} unless @_hasStatusDeviceRef config
+    meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
+    meshblu.update statusDevice, {
+      'status.onlineUntil': onlineUntil
+    }, (error) => console.error error.stack if error?
+
+  _hasStatusDeviceRef: (config) =>
+    return config?.status?.$ref?
+
+  _addStatusDeviceRef: ({auth, statusDevice}) =>
+    meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
+    meshblu.update auth.uuid, {
+      status: $ref: "meshbludevice://#{statusDevice}/#/status"
+    }, (error) => console.error error.stack if error?
 
   _updateStatusDeviceWithError: ({auth, userDeviceUuid, error}, callback=_.noop) =>
     debug '_updateStatusDeviceWithError', userDeviceUuid, error
