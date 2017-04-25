@@ -30,5 +30,4 @@ class MessagesController
       return res.sendError newError if newError?
       return res.sendError error
 
-
 module.exports = MessagesController

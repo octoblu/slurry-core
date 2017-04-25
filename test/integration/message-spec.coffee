@@ -80,6 +80,7 @@ describe 'messages', ->
       describe 'when we get some weird device instead of a credentials device', ->
         beforeEach ->
           serviceAuth = new Buffer('peter:i-could-eat').toString 'base64'
+          credAuth = new Buffer('cred-uuid:cred-token').toString 'base64'
 
           @meshblu
             .get '/v2/devices/cred-uuid'
@@ -87,6 +88,11 @@ describe 'messages', ->
             .reply 200,
               uuid: 'cred-uuid'
               banana: 'pudding'
+
+          @replyToSender = @meshblu
+            .post '/messages'
+            .set 'Authorization', "Basic #{credAuth}"
+            .reply 204
 
         describe 'when called with a valid message', ->
           beforeEach (done) ->
@@ -109,12 +115,16 @@ describe 'messages', ->
             request.post '/v1/messages', options, (error, @response, @body) =>
               done error
 
+          it 'should reply with an error to the whomever sent the message', ->
+            @replyToSender.done()
+
           it 'should return a 400', ->
             expect(@response.statusCode).to.equal 400, JSON.stringify @body
 
       describe 'when we get an invalid credentials device', ->
         beforeEach ->
           serviceAuth = new Buffer('peter:i-could-eat').toString 'base64'
+          credAuth = new Buffer('cred-uuid:cred-token').toString 'base64'
 
           @meshblu
             .get '/v2/devices/cred-uuid'
@@ -126,6 +136,11 @@ describe 'messages', ->
                   credentialsDeviceUuid: 'cred-uuid'
                   encrypted: @encrypted
 
+          @replyToSender = @meshblu
+            .post '/messages'
+            .set 'Authorization', "Basic #{credAuth}"
+            .reply 204
+
         describe 'when called with a valid message', ->
           beforeEach (done) ->
             options =
@@ -146,6 +161,9 @@ describe 'messages', ->
 
             request.post '/v1/messages', options, (error, @response, @body) =>
               done error
+
+          it 'should reply with an error to the whomever sent the message', ->
+            @replyToSender.done()
 
           it 'should return a 400', ->
             expect(@response.statusCode).to.equal 400, JSON.stringify @body
