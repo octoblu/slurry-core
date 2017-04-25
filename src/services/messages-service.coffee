@@ -2,6 +2,7 @@
 _           = require 'lodash'
 Encryption  = require 'meshblu-encryption'
 MeshbluHTTP = require 'meshblu-http'
+moment      = require 'moment'
 
 debug = require('debug')('slurry-core:messages-service')
 
@@ -61,7 +62,7 @@ class MessagesService
       return callback() unless statusDevice?
       update =
         $push:
-          errors:
+          'status.errors':
             $each: [
               senderUuid: senderUuid
               date: moment.utc().format()

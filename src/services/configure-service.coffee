@@ -44,7 +44,7 @@ class ConfigureService
       return callback(error) unless statusDevice?
       update =
         $push:
-          errors:
+          'status.errors':
             $each: [
               date: moment.utc().format()
               code: error.code ? 500
