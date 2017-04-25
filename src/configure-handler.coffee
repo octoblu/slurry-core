@@ -76,7 +76,7 @@ class ConfigureHandler
 
       if error?
         console.error error.stack
-        @slurrySpreader.delay {uuid, timeout:THIRTY_SECONDS}, _.noop if error.code == 401
+        @slurrySpreader.delay {uuid, timeout:THIRTY_SECONDS}, _.noop if error.shouldRetry
         @slurrySpreader.close {uuid}, _.noop
         return
 
