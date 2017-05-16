@@ -161,7 +161,7 @@ class ConfigureHandler
 
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.device userDeviceUuid, (newError, {statusDevice}={}) =>
-      debug '_updateStatusDeviceWithError:statusDevice', newError?.message, statusDevice
+      debug "_updateStatusDeviceWithError:statusDevice #{newError?.message} #{userDeviceUuid}/#{statusDevice}" if newError?
       return callback newError if newError?
       return callback() unless statusDevice?
       update =
