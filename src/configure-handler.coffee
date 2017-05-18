@@ -75,7 +75,7 @@ class ConfigureHandler
       @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error} if error?
 
       if error?
-        console.error error.stack
+        console.error 'slurryConfiguration.action Error', error.stack
         @slurrySpreader.delay {uuid, timeout:THIRTY_SECONDS}, _.noop if error.shouldRetry
         @slurrySpreader.remove {uuid}, _.noop unless error.shouldRetry
         @slurrySpreader.close {uuid}, _.noop
@@ -87,14 +87,14 @@ class ConfigureHandler
         @_onSlurryClose slurry
 
       slurryStream.__slurryOnError = (error) =>
-        console.error error.stack
+        console.error 'Slurry onError', error.stack
         @slurrySpreader.remove {uuid}, _.noop unless error.shouldRetry
         @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error}
         @_destroySlurry slurry
 
       slurryStream.__slurryOnDelay = (error, timeout=THIRTY_SECONDS) =>
         throw new Error 'parameter "error" must pass _.isError' unless _.isError error
-        console.error error.stack
+        console.error 'Slurry onDelay', error.stack
         @_updateStatusDeviceWithError {auth, userDeviceUuid: uuid, error}
         @_onSlurryDelay {uuid, timeout}
 
@@ -108,7 +108,7 @@ class ConfigureHandler
     @_destroySlurry { uuid }
     @slurrySpreader.delay {uuid, timeout}, (error) =>
       @_slurryStreams[uuid].destroy?()
-      return console.error error if error?
+      return console.error error.stack if error?
 
   _onSlurryDestroy: ({ uuid }) =>
     @_destroySlurry { uuid }
