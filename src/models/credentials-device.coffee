@@ -1,4 +1,5 @@
 _           = require 'lodash'
+async       = require 'async'
 MeshbluHTTP = require 'meshblu-http'
 Encryption  = require 'meshblu-encryption'
 url         = require 'url'
@@ -103,9 +104,19 @@ class CredentialsDevice
     update = credentialsDeviceUpdateGenerator {slurry, slurrySignature, @serviceUrl}
     @meshblu.updateDangerously @uuid, update, (error) =>
       return callback error if error?
-      @_subscribeToOwnMessagesReceived (error) =>
+      @_updateUserDevices (error) =>
         return callback error if error?
-        @_subscribeToOwnConfigureReceived callback
+        @_subscribeToOwnMessagesReceived (error) =>
+          return callback error if error?
+          @_subscribeToOwnConfigureReceived callback
+
+  _updateUserDevices: (callback) =>
+    @getUserDevices (error, devices) =>
+      return callback error if error?
+      async.each devices, (device, next) =>
+        update = $set: credentialsDeviceUpdatedAt: Date.now()
+        @meshblu.updateDangerously device.uuid, update, next
+      , callback
 
   _getConfigureSchemaUrl: =>
     uri = url.parse @serviceUrl

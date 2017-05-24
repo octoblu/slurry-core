@@ -232,6 +232,11 @@ describe 'Auth Spec', ->
 
           .reply 204
 
+        @getSubscriptions = @meshblu
+          .get '/v2/devices/cred-uuid/subscriptions'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 200, []
+
         @createMessageReceivedSubscription = @meshblu
           .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/message.received'
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
@@ -258,14 +263,9 @@ describe 'Auth Spec', ->
 
       it 'should create a credentials device', ->
         @createCredentialsDevice.done()
-
-      it 'should update the credentials device with the new resourceOwnerSecret and authorizedUuid', ->
         @updateCredentialsDevice.done()
-
-      it 'should subscribe to its own received messages', ->
+        @getSubscriptions.done()
         @createMessageReceivedSubscription.done()
-
-      it 'should subscribe to its own configure.received', ->
         @createConfigureReceivedSubscription.done()
 
       it 'should redirect to the userDeviceManagerUrl with the bearerToken and credentialsDeviceUrl', ->
@@ -342,6 +342,11 @@ describe 'Auth Spec', ->
               }]
           .reply 204
 
+        @getSubscriptions = @meshblu
+          .get '/v2/devices/cred-uuid/subscriptions'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 200, []
+
         @createMessageReceivedSubscription = @meshblu
           .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/message.received'
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
@@ -368,11 +373,126 @@ describe 'Auth Spec', ->
 
       it 'should update the credentials device with the new resourceOwnerSecret and authorizedUuid', ->
         @updateCredentialsDevice.done()
-
-      it 'should subscribe to its own received messages', ->
+        @getSubscriptions.done()
         @createMessageReceivedSubscription.done()
+        @createConfigureReceivedSubscription.done()
 
-      it 'should subscribe to its own configure.received', ->
+      it 'should return a 301', ->
+        expect(@response.statusCode).to.equal 301
+
+      it 'should redirect to the userDeviceManagerUrl with the bearerToken and credentialsDeviceUrl', ->
+        EXPECTED = 'http://manage-my.slurry/?meshbluAuthBearer=c29tZS11dWlkOnNvbWUtdG9rZW4%3D&credentialsDeviceUrl=http%3A%2F%2Fthe-slurry-url%2Fcredentials%2Fcred-uuid&appOctobluHost=http%3A%2F%2Fapp.octoblu.biz%2F'
+        expect(@response.headers.location).to.equal EXPECTED
+
+    describe 'when the credentials device does exist, and it has a user device', ->
+      beforeEach (done) ->
+        userAuth = new Buffer('some-uuid:some-token').toString 'base64'
+        serviceAuth = new Buffer('peter:i-could-eat').toString 'base64'
+        credentialsDeviceAuth = new Buffer('cred-uuid:cred-token2').toString 'base64'
+
+        @apiStub.yields null, {
+          id:       'resource owner id'
+          username: 'resource owner username'
+          secrets:
+            credentials:
+              secret:       'resource owner secret'
+              refreshToken: 'resource owner refresh token'
+        }
+
+        @meshblu
+          .post '/authenticate'
+          .set 'Authorization', "Basic #{userAuth}"
+          .reply 204
+
+        @meshblu
+          .post '/search/devices'
+          .set 'Authorization', "Basic #{serviceAuth}"
+          .send 'slurry.idKey': 'Ula5075pW5J6pbIzhez3Be78UsyVApbXMXEPXmMwBAtVdtxdHoXNx+fI9nLV/pHZzlOI0RjhJmO+qQ3zAnKviw=='
+          .reply 200, [{
+            uuid: 'cred-uuid'
+            token: 'cred-token'
+            slurrySignature: 'OLE06dTcCpQni4qWRxRnRwtzm1XBrkflhQeAdbHCeJgwzjXvvTv6kKcWrV+0zkPaQavWANNKg/EZsnY7kq7TmQ=='
+            slurry:
+              credentialsDeviceUuid: 'cred-uuid'
+              encrypted: @encryptedSecrets
+          }]
+
+        @meshblu
+          .post '/devices/cred-uuid/tokens'
+          .set 'Authorization', "Basic #{serviceAuth}"
+          .reply 201, '{"uuid": "cred-uuid", "token": "cred-token2"}'
+
+        @updateCredentialsDevice = @meshblu
+          .put '/v2/devices/cred-uuid'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .send
+            $set:
+              slurry:
+                authorizedKey: 'pG7eYd4TYZOX2R5S73jo9aexPzldiNo4pw1wViDpYrAAGRMT6dY0jlbXbfHMz9y+El6AcXMZJEOxaeO1lITsYg=='
+                idKey: 'Ula5075pW5J6pbIzhez3Be78UsyVApbXMXEPXmMwBAtVdtxdHoXNx+fI9nLV/pHZzlOI0RjhJmO+qQ3zAnKviw=='
+                credentialsDeviceUuid: 'cred-uuid'
+                version: '1.0.0'
+                encrypted:
+                  id:           'resource owner id'
+                  username:     'resource owner username'
+                  secrets:
+                    credentials:
+                      secret:       'resource owner secret'
+                      refreshToken: 'resource owner refresh token'
+              slurrySignature: 'a1aPDryhnkn7TSpGcRID5ah9FMdkb+uNvp+5w8tRybXvKt3JuWcBDI0JYGAnSPH3EYBqolPbGrsXJJnl19vJjw=='
+              'meshblu.forwarders.message.received': [{
+                type: 'webhook'
+                url: 'http://the-slurry-url/v1/messages'
+                method: 'POST'
+                generateAndForwardMeshbluCredentials: true
+              }]
+              'meshblu.forwarders.configure.received': [{
+                type: 'webhook'
+                url: 'http://the-slurry-url/v1/configure'
+                method: 'POST'
+                generateAndForwardMeshbluCredentials: true
+              }]
+          .reply 204
+
+        @getSubscriptions = @meshblu
+          .get '/v2/devices/cred-uuid/subscriptions'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 200, [emitterUuid: 'user-device-uuid', type: 'message.received']
+
+        @updateUserDevice = @meshblu
+          .put '/v2/devices/user-device-uuid'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 201
+
+        @createMessageReceivedSubscription = @meshblu
+          .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/message.received'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 201
+
+        @createConfigureReceivedSubscription = @meshblu
+          .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/configure.received'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 201
+
+        options =
+          uri: '/auth/api/callback'
+          baseUrl: "http://localhost:#{@serverPort}"
+          followRedirect: false
+          auth:
+            username: 'some-uuid'
+            password: 'some-token'
+          qs:
+            oauth_token: 'oauth_token'
+            oauth_verifier: 'oauth_verifier'
+
+        request.get options, (error, @response, @body) =>
+          done error
+
+      it 'should update the credentials device with the new resourceOwnerSecret and authorizedUuid', ->
+        @updateCredentialsDevice.done()
+        @getSubscriptions.done()
+        @updateUserDevice.done()
+        @createMessageReceivedSubscription.done()
         @createConfigureReceivedSubscription.done()
 
       it 'should return a 301', ->
@@ -459,6 +579,11 @@ describe 'Auth Spec', ->
               }]
           .reply 204
 
+        @getSubscriptions = @meshblu
+          .get '/v2/devices/cred-uuid/subscriptions'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 200, []
+
         @createMessageReceivedSubscription = @meshblu
           .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/message.received'
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
@@ -485,11 +610,8 @@ describe 'Auth Spec', ->
 
       it 'should update the credentials device with the new resourceOwnerSecret and authorizedUuid', ->
         @updateCredentialsDevice.done()
-
-      it 'should subscribe to its own received messages', ->
+        @getSubscriptions.done()
         @createMessageReceivedSubscription.done()
-
-      it 'should subscribe to its own configure.received', ->
         @createConfigureReceivedSubscription.done()
 
       it 'should return a 301', ->
@@ -574,6 +696,11 @@ describe 'Auth Spec', ->
               }]
           .reply 204
 
+        @getSubscriptions = @meshblu
+          .get '/v2/devices/cred-uuid/subscriptions'
+          .set 'Authorization', "Basic #{credentialsDeviceAuth}"
+          .reply 200, []
+
         @createMessageReceivedSubscription = @meshblu
           .post '/v2/devices/cred-uuid/subscriptions/cred-uuid/message.received'
           .set 'Authorization', "Basic #{credentialsDeviceAuth}"
@@ -603,11 +730,8 @@ describe 'Auth Spec', ->
 
       it 'should update the credentials device with the new resourceOwnerSecret and authorizedUuid', ->
         @updateCredentialsDevice.done()
-
-      it 'should subscribe to its own received messages', ->
+        @getSubscriptions.done()
         @createMessageReceivedSubscription.done()
-
-      it 'should subscribe to its own configure.received', ->
         @createConfigureReceivedSubscription.done()
 
       it 'should redirect to the userDeviceManagerUrl with the bearerToken and credentialsDeviceUrl', ->
