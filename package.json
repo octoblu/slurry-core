@@ -1,6 +1,6 @@
 {
   "name": "slurry-core",
-  "version": "4.1.0",
+  "version": "4.0.2",
   "description": "Put some description here",
   "keywords": [],
   "homepage": "https://github.com/octoblu/slurry-core",
@@ -34,7 +34,6 @@
     "sinon-chai": "^2.9.0"
   },
   "dependencies": {
-    "async": "^2.4.1",
     "body-parser": "^1.17.1",
     "coffee-script": "^1.12.5",
     "cookie-parser": "^1.4.1",
