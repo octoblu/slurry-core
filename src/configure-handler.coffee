@@ -151,7 +151,13 @@ class ConfigureHandler
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.update statusDevice, {
       'status.onlineUntil': onlineUntil
-    }, (error) => console.error '_updateOnlineUntil', error.stack if error?
+    }, (error) =>
+      return unless error?
+      console.error '_updateOnlineUntil', error.code, error.stack
+      # remove slurry when we get 403 Forbidden
+      return unless error.code == 403
+      @slurrySpreader.remove slurry, =>
+        @_destroySlurry slurry
 
   _hasStatusDeviceRef: (config) =>
     return config?.status?.$ref?
