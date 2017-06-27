@@ -69,7 +69,7 @@ class CredentialsDeviceService
     try
       slurry.encrypted = @encryption.decrypt slurry.encrypted
     catch error
-      console.error error.stack
+      console.error '_isSignedCorrectly', error.stack
       return false
 
     # correctSig___ = @encryption.sign slurry

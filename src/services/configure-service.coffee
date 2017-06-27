@@ -39,7 +39,7 @@ class ConfigureService
 
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.device userDeviceUuid, (newError, {statusDevice}={}) =>
-      console.error newError.stack if newError?
+      console.error '_updateStatusDeviceWithError.device', newError.stack if newError?
       return callback(error) if newError?
       return callback(error) unless statusDevice?
       update =
@@ -52,7 +52,7 @@ class ConfigureService
             ]
             $slice: -99
       meshblu.updateDangerously statusDevice, update, as: userDeviceUuid, (newError) =>
-        console.error newError.stack if newError?
+        console.error '_updateStatusDeviceWithError.updateDangerously', newError.stack if newError?
         return callback error
 
 

@@ -108,7 +108,7 @@ class ConfigureHandler
     @_destroySlurry { uuid }
     @slurrySpreader.delay {uuid, timeout}, (error) =>
       @_slurryStreams[uuid].destroy?()
-      return console.error error.stack if error?
+      return console.error '_onSlurryDelay', error.stack if error?
 
   _onSlurryDestroy: ({ uuid }) =>
     @_destroySlurry { uuid }
@@ -140,7 +140,7 @@ class ConfigureHandler
       try
         configurations[key] = require dir
       catch error
-        console.error error.stack
+        console.error '_getConfigurations', error.stack
 
     return configurations
 
@@ -151,7 +151,7 @@ class ConfigureHandler
     meshblu = new MeshbluHTTP _.defaults auth, @meshbluConfig
     meshblu.update statusDevice, {
       'status.onlineUntil': onlineUntil
-    }, (error) => console.error error.stack if error?
+    }, (error) => console.error '_updateOnlineUntil', error.stack if error?
 
   _hasStatusDeviceRef: (config) =>
     return config?.status?.$ref?

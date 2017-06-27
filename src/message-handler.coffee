@@ -65,7 +65,7 @@ class MessageHandlers
       try
         jobs[key] = require dir
       catch error
-        console.error error.stack
+        console.error '_getJobs', error.stack
 
     return jobs
 
